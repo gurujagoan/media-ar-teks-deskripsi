@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maket AR – Rumah Melayu Pontianak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+  <style>
+    .ar-tata { flex: 1; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); min-height: 0; }
+    model-viewer { width: 100%; height: 100%; min-height: 60vh; background: linear-gradient(#BFE3F5, #F6E3B0); --poster-color: transparent; }
+    .hs { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; background: var(--emas); color: var(--teks); font: 700 .8rem 'Nunito Sans', sans-serif; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+    .hs[data-visible="false"] { opacity: .35; }
+    .hs.selesai { background: var(--hijau); color: #fff; }
+    .tombol-ar { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); }
+    @media (max-width: 900px) { .ar-tata { grid-template-columns: 1fr; } model-viewer { min-height: 58vh; } }
+  </style>
+</head>
+<body>
+  <header class="kepala">
+    <div class="judul"><div><h1>Maket AR Rumah Melayu Pontianak</h1><p>Letakkan rumah di meja Anda, kelilingi, dan amati dari dekat</p></div></div>
+    <div class="info-sesi"><a class="tombol kecil emas" href="index.html">← Kembali ke VR</a></div>
+  </header>
+  <div class="corak-insang" aria-hidden="true"></div>
+  <main class="ar-tata">
+    <model-viewer id="mv" src="assets/rumah-melayu-pontianak.glb" alt="Model 3D rumah adat Melayu Pontianak"
+      ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" camera-controls touch-action="pan-y"
+      shadow-intensity="1" exposure="1.05" camera-orbit="25deg 70deg auto" auto-rotate auto-rotate-delay="4000">
+      <button slot="ar-button" class="tombol emas tombol-ar">📱 Tampilkan di ruangan saya (AR)</button>
+    </model-viewer>
+    <section class="panel">
+      <h2 style="color:var(--marun)">Misi AR: Pengamat Jeli</h2>
+      <p>Tekan <b>Tampilkan di ruangan saya</b>, arahkan kamera ke lantai atau meja, lalu kelilingi maket. Ketuk bulatan bernomor untuk membaca keterangan setiap bagian.</p>
+      <div class="bar"><i id="bar" style="width:0%"></i></div>
+      <p class="sumber" id="progres">0 bagian diamati</p>
+      <div id="kartu" class="kartu emas">Ketuk salah satu bulatan bernomor pada model.</div>
+      <div class="kartu"><b>Tantangan menulis cepat</b><p>Setelah mengelilingi maket, tulis 2 kalimat deskripsi dari sudut pandang <i>belakang rumah</i>, bagian yang tidak terlihat dari depan.</p></div>
+      <p class="sumber">AR berjalan di Android (Chrome + ARCore) dan iPhone/iPad (Safari, AR Quick Look). Di laptop, model dapat diputar dengan mouse.</p>
+    </section>
+  </main>
+  <script src="js/rumah.js"></script>
+  <script src="js/konten.js"></script>
+  <script>
+    var mv = document.getElementById('mv'), dilihat = {};
+    var HS = RumahMelayu.HOTSPOT.filter(function (h) { return h.id !== 'sungai'; }); // maket AR tanpa sungai
+    HS.forEach(function (h, i) {
+      var b = document.createElement('button');
+      b.className = 'hs'; b.slot = 'hotspot-' + h.id; b.textContent = i + 1;
+      b.dataset.position = h.pos.map(function (v) { return (v * 0.05).toFixed(3) + 'm'; }).join(' ');
+      b.addEventListener('click', function () {
+        var d = KONTEN.hotspot[h.id];
+        dilihat[h.id] = true; b.classList.add('selesai');
+        document.getElementById('kartu').innerHTML = '<h3>' + (i + 1) + '. ' + d.judul + '</h3><p>' + d.fakta + '</p><p class="nilai-lokal">🌿 ' + d.nilai + '</p>';
+        var n = Object.keys(dilihat).length;
+        document.getElementById('bar').style.width = (n / HS.length * 100) + '%';
+        document.getElementById('progres').textContent = n + ' dari ' + HS.length + ' bagian diamati';
+      });
+      mv.appendChild(b);
+    });
+  </script>
+</body>
+</html>
