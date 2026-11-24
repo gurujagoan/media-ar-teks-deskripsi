@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bertandang ke Rumah Melayu – Media Teks Deskripsi AR/VR + GenAI</title>
+  <meta name="description" content="Media pembelajaran interaktif Bahasa Indonesia: menulis teks deskripsi melalui penjelajahan VR/AR rumah adat Melayu Pontianak dengan umpan balik Generative AI.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="js/rumah.js"></script>
+  <script>
+    // Komponen A-Frame: membangun rumah Melayu dari parameter (dipakai juga untuk variasi GenAI)
+    AFRAME.registerComponent('rumah-melayu', {
+      schema: { opt: { type: 'string', default: '{}' } },
+      update: function () {
+        if (this.el.getObject3D('rumah')) this.el.removeObject3D('rumah');
+        this.el.setObject3D('rumah', RumahMelayu.buildRumah(AFRAME.THREE, JSON.parse(this.data.opt || '{}')));
+        this.el.emit('rumah-siap');
+      }
+    });
+    AFRAME.registerComponent('denyut', {
+      tick: function (t) { var s = 1 + 0.15 * Math.sin(t / 250); this.el.object3D.scale.set(s, s, s); }
+    });
+  </script>
+</head>
+<body>
+  <header class="kepala">
+    <div class="judul">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 34 L32 12 L56 34 Z" fill="#E3A72F"/><rect x="14" y="34" width="36" height="16" fill="#F3E3B3"/><rect x="28" y="38" width="8" height="12" fill="#5A3825"/><g fill="#3B2A22"><rect x="16" y="50" width="3" height="8"/><rect x="30" y="50" width="3" height="8"/><rect x="45" y="50" width="3" height="8"/></g></svg>
+      <div>
+        <h1>Bertandang ke Rumah Melayu</h1>
+        <p>Menulis Teks Deskripsi · Rumah Adat Melayu Pontianak · VR · AR · GenAI</p>
+      </div>
+    </div>
+    <div class="info-sesi">
+      <span id="timer" title="Durasi belajar (target 15–20 menit)">⏱ 00:00</span>
+      <button class="tombol kecil garis-terang" id="buka-ai" title="Pengaturan Generative AI">⚙ GenAI <span id="status-ai" class="titik"></span></button>
+      <a class="tombol kecil emas" href="ar.html" target="_blank" rel="noopener">📱 Lihat di AR</a>
+    </div>
+  </header>
+  <div class="corak-insang" aria-hidden="true"></div>
+
+  <main class="tata">
+    <section class="panggung" aria-label="Penjelajahan 3D / VR">
+      <a-scene embedded renderer="antialias: true; colorManagement: true" vr-mode-ui="enabled: true"
+               cursor="rayOrigin: mouse" raycaster="objects: .klik" loading-screen="dotsColor: #E3A72F; backgroundColor: #2B1B12">
+        <a-sky color="#BFE3F5"></a-sky>
+        <a-entity light="type: ambient; intensity: 0.75; color: #FFF6E5"></a-entity>
+        <a-entity light="type: directional; intensity: 0.9; color: #FFFFFF" position="6 12 8"></a-entity>
+        <a-entity light="type: directional; intensity: 0.35; color: #FFE0B0" position="-8 6 -6"></a-entity>
+
+        <a-entity id="rumah" rumah-melayu></a-entity>
+        <a-entity id="variasi" visible="false"></a-entity>
+        <a-entity id="hotspots" visible="false"></a-entity>
+
+        <a-entity id="rig" position="0 1.6 17">
+          <a-entity id="kamera" camera look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 25">
+          </a-entity>
+          <a-entity laser-controls="hand: right" raycaster="objects: .klik; far: 60"></a-entity>
+        </a-entity>
+      </a-scene>
+
+      <div class="kontrol-pandang" role="group" aria-label="Pindah sudut pandang">
+        <span>Sudut pandang:</span>
+        <button data-vp="depan">Depan</button>
+        <button data-vp="dekat">Serambi</button>
+        <button data-vp="samping">Samping</button>
+        <button data-vp="belakang">Belakang</button>
+        <button data-vp="atas">Udara</button>
+      </div>
+      <div class="petunjuk-3d">Seret untuk melihat sekeliling · W/A/S/D untuk berjalan · klik bulatan emas · tombol kacamata = mode VR</div>
+      <div id="label-hotspot" class="label-hotspot" hidden></div>
+    </section>
+
+    <section class="panel" aria-live="polite">
+      <ol class="langkah" id="langkah">
+        <li data-i="0">Sambutan</li>
+        <li data-i="1">Bertandang</li>
+        <li data-i="2">Struktur</li>
+        <li data-i="3">Menulis</li>
+        <li data-i="4">Variasi AI</li>
+        <li data-i="5">Tamat</li>
+      </ol>
+      <div class="pemandu">
+        <div class="avatar" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="16" fill="#E8C39E"/><path d="M14 30 Q32 6 50 30 L46 26 Q32 16 18 26 Z" fill="#B71C1C"/><path d="M18 27 L32 12 L46 27 Z" fill="#E3A72F"/><circle cx="26" cy="38" r="2" fill="#3B2A22"/><circle cx="38" cy="38" r="2" fill="#3B2A22"/><path d="M26 46 Q32 50 38 46" stroke="#3B2A22" stroke-width="2" fill="none"/></svg>
+        </div>
+        <div class="gelembung">
+          <b>Pak Long</b>
+          <p id="kata-pemandu"></p>
+          <button class="dengar" id="tombol-dengar" title="Dengarkan">🔊 Dengarkan</button>
+        </div>
+      </div>
+      <div id="isi" class="isi"></div>
+    </section>
+  </main>
+
+  <dialog id="dialog-ai">
+    <form method="dialog" class="form-ai">
+      <h2>⚙ Aktifkan Generative AI</h2>
+      <p>GenAI dipakai untuk <b>menilai teks deskripsi</b>, <b>merancang variasi rumah 3D</b>, dan <b>memeriksa ketelitian pengamatan</b>. Tanpa API key, aplikasi tetap berjalan dengan penilai cadangan offline.</p>
+      <label>Penyedia
+        <select id="ai-provider">
+          <option value="gemini">Google Gemini (gratis – disarankan)</option>
+          <option value="pollinations">Pollinations.ai (sk_ key)</option>
+        </select>
+      </label>
+      <label>API key <input id="ai-key" type="password" autocomplete="off" placeholder="Tempel API key di sini"></label>
+      <label>Model (opsional) <input id="ai-model" type="text" placeholder="gemini-flash-latest"></label>
+      <p class="sumber">Cara mendapatkan key Gemini gratis: buka <b>aistudio.google.com</b> → <i>Get API key</i> → <i>Create API key</i>. Key hanya disimpan di browser ini dan tidak dikirim ke mana pun selain penyedia AI yang dipilih.</p>
+      <p id="ai-hasil" class="sumber"></p>
+      <div class="baris-tombol">
+        <button type="button" class="tombol emas" id="ai-uji">Simpan &amp; Uji</button>
+        <button type="button" class="tombol garis" id="ai-hapus">Hapus key</button>
+        <button value="tutup" class="tombol garis">Tutup</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer class="kaki">Prototipe media pembelajaran · Bahasa Indonesia (Teks Deskripsi) · Kearifan lokal Melayu Pontianak · VR: A-Frame/WebXR · AR: model-viewer · GenAI: Gemini/Pollinations (dengan cadangan offline)</footer>
+
+  <script src="js/konten.js"></script>
+  <script src="js/genai.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
